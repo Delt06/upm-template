@@ -104,6 +104,8 @@ namespace Editor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+
+            EditorUtility.DisplayDialog("Success", "Package set up finished successfully", "OK");
         }
 
         private void PatchPackageJson(TextAsset packageJsonAsset, string unityVersion)
