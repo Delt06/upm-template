@@ -71,7 +71,7 @@ namespace Editor
                 return;
             }
 
-            if (!RepoNameSameAsPackageName && string.IsNullOrWhiteSpace(RepoName))
+            if (string.IsNullOrWhiteSpace(GetRepoName()))
             {
                 DisplayError("Repo Name is required");
                 return;
@@ -91,8 +91,10 @@ namespace Editor
             }
 
 
-            PatchPackageJson(packageBootstrapSettings.PackageJsonAsset);
+            var unityVersion = Application.unityVersion;
+            PatchPackageJson(packageBootstrapSettings.PackageJsonAsset, unityVersion);
             PatchAsmdef(packageBootstrapSettings.AsmdefAsset);
+            PatchReadme(unityVersion);
 
             // Directory.Move(
             //     PathInPackages(DefaultFullPackageName),
@@ -103,13 +105,13 @@ namespace Editor
             AssetDatabase.Refresh();
         }
 
-        private void PatchPackageJson(TextAsset packageJsonAsset)
+        private void PatchPackageJson(TextAsset packageJsonAsset, string unityVersion)
         {
             var packageJson = JsonUtility.FromJson<PackageJsonModel>(packageJsonAsset.text);
             packageJson.name = PackageName;
             packageJson.displayName = PackageDisplayName;
             packageJson.description = PackageDescription;
-            packageJson.unity = string.Join(".", Application.unityVersion.Split('.').Take(2));
+            packageJson.unity = string.Join(".", unityVersion.Split('.').Take(2));
             WriteTextToAsset(packageJsonAsset, JsonUtility.ToJson(packageJson));
         }
 
@@ -123,6 +125,21 @@ namespace Editor
             var asmdefPath = AssetDatabase.GetAssetPath(asmdefAsset);
             AssetDatabase.RenameAsset(asmdefPath, $"{Namespace}.asmdef");
         }
+
+        private void PatchReadme(string unityVersion)
+        {
+            var readmePath = Path.Combine(Application.dataPath, "..", "README.md");
+            var readmeText = File.ReadAllText(readmePath);
+            readmeText = readmeText.Replace("{package-display-name}", PackageDisplayName);
+            readmeText = readmeText.Replace("{repo-name}", GetRepoName());
+            readmeText = readmeText.Replace("{unity-version}", unityVersion);
+            readmeText = readmeText.Replace("{package-description}", PackageDescription);
+            readmeText = readmeText.Replace("{package-name}", PackageName);
+            
+            File.WriteAllText(readmePath, readmeText);
+        }
+        
+        private string GetRepoName() => RepoNameSameAsPackageName ? PackageName : RepoName;
 
         private void WriteTextToAsset(Object asset, string text)
         {
