@@ -95,6 +95,7 @@ namespace Editor
             PatchPackageJson(packageBootstrapSettings.PackageJsonAsset, unityVersion);
             PatchAsmdef(packageBootstrapSettings.AsmdefAsset);
             PatchReadme(unityVersion);
+            PatchProjectSettings();
 
             Directory.Move(
                 PathInPackages(DefaultFullPackageName),
@@ -124,6 +125,11 @@ namespace Editor
 
             var asmdefPath = AssetDatabase.GetAssetPath(asmdefAsset);
             AssetDatabase.RenameAsset(asmdefPath, $"{Namespace}.asmdef");
+        }
+
+        private void PatchProjectSettings()
+        {
+            PlayerSettings.productName = PackageDisplayName;
         }
 
         private void PatchReadme(string unityVersion)
