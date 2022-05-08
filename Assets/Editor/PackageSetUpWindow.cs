@@ -1,7 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Editor
 {
@@ -11,6 +14,7 @@ namespace Editor
 
         public string PackageName;
         public string PackageDisplayName;
+        public string Namespace = "DELTation.NewPackage";
         public bool RepoNameSameAsPackageName = true;
         public string RepoName;
         public string PackageDescription;
@@ -19,6 +23,7 @@ namespace Editor
         {
             PackageName = TextField("Package Name", PackageName);
             PackageDisplayName = TextField("Package Display Name", PackageDisplayName);
+            Namespace = TextField("Namespace", Namespace, ns => ns.Replace(" ", "_"));
             RepoNameSameAsPackageName =
                 EditorGUILayout.Toggle("Repo Name Same As Package Name", RepoNameSameAsPackageName);
             if (!RepoNameSameAsPackageName)
@@ -31,14 +36,17 @@ namespace Editor
                 CreatePackage();
         }
 
-        private string TextField(string label, string text)
+        private string TextField(string label, string text, [CanBeNull] Func<string, string> onChange = null)
         {
             EditorGUI.BeginChangeCheck();
 
             text = EditorGUILayout.TextField(label, text);
 
-            if (EditorGUI.EndChangeCheck())
-                text = text.Trim();
+            if (!EditorGUI.EndChangeCheck()) return text;
+
+            text = text.Trim();
+            if (onChange != null)
+                text = onChange(text);
 
             return text;
         }
@@ -54,6 +62,12 @@ namespace Editor
             if (string.IsNullOrWhiteSpace(PackageDisplayName))
             {
                 DisplayError("Package Display Name is required");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Namespace))
+            {
+                DisplayError("Namespace is required");
                 return;
             }
 
@@ -77,18 +91,37 @@ namespace Editor
             }
 
 
-            var packageJsonAsset = packageBootstrapSettings.PackageJsonAsset;
+            PatchPackageJson(packageBootstrapSettings.PackageJsonAsset);
+            PatchAsmdef(packageBootstrapSettings.AsmdefAsset);
+
+            // Directory.Move(
+            //     PathInPackages(DefaultFullPackageName),
+            //     PathInPackages(CreateFullPackageName(PackageName))
+            // );
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        private void PatchPackageJson(TextAsset packageJsonAsset)
+        {
             var packageJson = JsonUtility.FromJson<PackageJsonModel>(packageJsonAsset.text);
             packageJson.name = PackageName;
             packageJson.displayName = PackageDisplayName;
             packageJson.description = PackageDescription;
             packageJson.unity = string.Join(".", Application.unityVersion.Split('.').Take(2));
             WriteTextToAsset(packageJsonAsset, JsonUtility.ToJson(packageJson));
+        }
 
-            // Directory.Move(
-            //     PathInPackages(DefaultFullPackageName),
-            //     PathInPackages(CreateFullPackageName(PackageName))
-            // );
+        private void PatchAsmdef(TextAsset asmdefAsset)
+        {
+            var asmdef = JsonUtility.FromJson<AsmdefJsonModel>(asmdefAsset.text);
+            asmdef.rootNamespace = Namespace;
+            asmdef.name = Namespace;
+            WriteTextToAsset(asmdefAsset, JsonUtility.ToJson(asmdef));
+
+            var asmdefPath = AssetDatabase.GetAssetPath(asmdefAsset);
+            AssetDatabase.RenameAsset(asmdefPath, $"{Namespace}.asmdef");
         }
 
         private void WriteTextToAsset(Object asset, string text)

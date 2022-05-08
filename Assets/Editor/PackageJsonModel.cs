@@ -8,7 +8,7 @@ namespace Editor
     public class PackageJsonModel
     {
         public string name;
-        // public string version;
+        public string version;
         public string displayName;
         public string description;
         public string unity;
