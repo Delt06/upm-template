@@ -6,7 +6,7 @@ namespace Editor
 {
     public class PackageSetUpWindow : EditorWindow
     {
-        private const string DefaultFullPackageName = "com.deltation.new-package";
+        private static readonly string DefaultFullPackageName = CreateFullPackageName("new-package");
 
         public string PackageName;
         public string PackageDisplayName;
@@ -16,27 +16,71 @@ namespace Editor
 
         private void OnGUI()
         {
-            PackageName = EditorGUILayout.TextField("Package Name", PackageName);
-            PackageDisplayName = EditorGUILayout.TextField("Package Display Name", PackageDisplayName);
+            PackageName = TextField("Package Name", PackageName);
+            PackageDisplayName = TextField("Package Display Name", PackageDisplayName);
             RepoNameSameAsPackageName =
                 EditorGUILayout.Toggle("Repo Name Same As Package Name", RepoNameSameAsPackageName);
             if (!RepoNameSameAsPackageName)
-                RepoName = EditorGUILayout.TextField("Repo Name", RepoName);
+                RepoName = TextField("Repo Name", RepoName);
 
             GUILayout.Label("Package Description");
-            PackageDescription = EditorGUILayout.TextArea(PackageDescription,GUILayout.Height(50));
+            PackageDescription = EditorGUILayout.TextArea(PackageDescription, GUILayout.Height(50));
 
-            if (GUILayout.Button("Create Package")) 
+            if (GUILayout.Button("Create Package"))
                 CreatePackage();
+        }
+
+        private string TextField(string label, string text)
+        {
+            EditorGUI.BeginChangeCheck();
+
+            text = EditorGUILayout.TextField(label, text);
+
+            if (EditorGUI.EndChangeCheck())
+                text = text.Trim();
+
+            return text;
         }
 
         private void CreatePackage()
         {
-            // Directory.Move(
-            //     PathInPackages(DefaultFullPackageName),
-            //     PathInPackages("com.deltation.a")
-            // );
+            if (string.IsNullOrWhiteSpace(PackageName))
+            {
+                DisplayError("Package Name is required");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(PackageDisplayName))
+            {
+                DisplayError("Package Display Name is required");
+                return;
+            }
+
+            if (!RepoNameSameAsPackageName && string.IsNullOrWhiteSpace(RepoName))
+            {
+                DisplayError("Repo Name is required");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(PackageDescription))
+            {
+                DisplayError("Package Description is required");
+                return;
+            }
+
+            Directory.Move(
+                PathInPackages(DefaultFullPackageName),
+                PathInPackages(CreateFullPackageName(PackageName))
+            );
         }
+
+        private static void DisplayError(string message)
+        {
+            EditorUtility.DisplayDialog("Error", message, "OK");
+        }
+
+        private static string CreateFullPackageName(string packageName) =>
+            $"com.deltation.{packageName}";
 
         private static string PathInPackages(string path) =>
             Path.Combine(Application.dataPath, "..", "Packages", path);
