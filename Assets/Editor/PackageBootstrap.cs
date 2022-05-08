@@ -4,9 +4,10 @@ namespace Editor
 {
     public static class PackageBootstrap
     {
-        [MenuItem("Tools/Set Up Package")]
+        [MenuItem("Package Template/Set Up Package")]
         public static void SetUpPackage()
         {
+            PackageSetUpWindow.Open();
         }
     }
 }
