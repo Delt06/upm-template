@@ -96,10 +96,10 @@ namespace Editor
             PatchAsmdef(packageBootstrapSettings.AsmdefAsset);
             PatchReadme(unityVersion);
 
-            // Directory.Move(
-            //     PathInPackages(DefaultFullPackageName),
-            //     PathInPackages(CreateFullPackageName(PackageName))
-            // );
+            Directory.Move(
+                PathInPackages(DefaultFullPackageName),
+                PathInPackages(CreateFullPackageName(PackageName))
+            );
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -135,10 +135,10 @@ namespace Editor
             readmeText = readmeText.Replace("{unity-version}", unityVersion);
             readmeText = readmeText.Replace("{package-description}", PackageDescription);
             readmeText = readmeText.Replace("{package-name}", PackageName);
-            
+
             File.WriteAllText(readmePath, readmeText);
         }
-        
+
         private string GetRepoName() => RepoNameSameAsPackageName ? PackageName : RepoName;
 
         private void WriteTextToAsset(Object asset, string text)

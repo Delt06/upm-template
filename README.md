@@ -3,7 +3,7 @@
 [![Version](https://img.shields.io/github/v/release/Delt06/{repo-name}?sort=semver)](https://github.com/Delt06/{repo-name}/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-TODO: write short package description here
+{package-description}
 
 > Developed and tested with Unity {unity-version}
 
