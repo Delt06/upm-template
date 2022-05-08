@@ -5,7 +5,8 @@ namespace Editor
     [CreateAssetMenu]
     public class PackageBootstrapSettings : ScriptableObject
     {
-        [SerializeField] private Object _packageDirectory;
+        [SerializeField] private TextAsset _packageJsonAsset;
 
+        public TextAsset PackageJsonAsset => _packageJsonAsset;
     }
 }

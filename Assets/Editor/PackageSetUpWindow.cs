@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -68,10 +69,32 @@ namespace Editor
                 return;
             }
 
-            Directory.Move(
-                PathInPackages(DefaultFullPackageName),
-                PathInPackages(CreateFullPackageName(PackageName))
-            );
+            var packageBootstrapSettings = Resources.Load<PackageBootstrapSettings>("Package Bootstrap Settings");
+            if (packageBootstrapSettings == null)
+            {
+                DisplayError("Package Bootstrap Settings not found");
+                return;
+            }
+
+
+            var packageJsonAsset = packageBootstrapSettings.PackageJsonAsset;
+            var packageJson = JsonUtility.FromJson<PackageJsonModel>(packageJsonAsset.text);
+            packageJson.name = PackageName;
+            packageJson.displayName = PackageDisplayName;
+            packageJson.description = PackageDescription;
+            packageJson.unity = string.Join(".", Application.unityVersion.Split('.').Take(2));
+            WriteTextToAsset(packageJsonAsset, JsonUtility.ToJson(packageJson));
+
+            // Directory.Move(
+            //     PathInPackages(DefaultFullPackageName),
+            //     PathInPackages(CreateFullPackageName(PackageName))
+            // );
+        }
+
+        private void WriteTextToAsset(Object asset, string text)
+        {
+            File.WriteAllText(AssetDatabase.GetAssetPath(asset), text);
+            EditorUtility.SetDirty(asset);
         }
 
         private static void DisplayError(string message)

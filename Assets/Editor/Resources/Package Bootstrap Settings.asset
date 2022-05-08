@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14067da27bc549c38b41dbcded5bec36, type: 3}
   m_Name: Package Bootstrap Settings
   m_EditorClassIdentifier: 
-  _packageDirectory: {fileID: 0}
+  _packageJsonAsset: {fileID: 8385607101436470782, guid: 48fb78d68b9837a4a9d69e0b2cff56b1, type: 3}
