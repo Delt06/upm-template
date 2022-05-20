@@ -111,7 +111,7 @@ namespace Editor
         private void PatchPackageJson(TextAsset packageJsonAsset, string unityVersion)
         {
             var packageJson = JsonUtility.FromJson<PackageJsonModel>(packageJsonAsset.text);
-            packageJson.name = PackageName;
+            packageJson.name = CreateFullPackageName(PackageName);
             packageJson.displayName = PackageDisplayName;
             packageJson.description = PackageDescription;
             packageJson.unity = string.Join(".", unityVersion.Split('.').Take(2));
