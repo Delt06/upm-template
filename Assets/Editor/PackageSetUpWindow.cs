@@ -105,6 +105,11 @@ namespace Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
+            var packageRootPath =
+                Path.Combine(Application.dataPath, "..", "Packages", CreateFullPackageName(PackageName));
+            GuidUtils.RegenerateGuids(packageRootPath);
+            AssetDatabase.Refresh();
+
             EditorUtility.DisplayDialog("Success", "Package set up finished successfully", "OK");
         }
 
